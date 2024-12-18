@@ -16,8 +16,7 @@ services:
     depends_on:
       mysql:
         condition: service_started
-
-
+        
   mysql:
     build:
       context: ./custom-mysql
