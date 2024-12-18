@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  python:
+    build:
+      context: ./custom-python
+      dockerfile: Dockerfile.python
+    environment:
+      - SECRET_KEY=/run/secrets/my_secret
+      - name=value
+    ports:
+      - 8080:80
+    secrets:
+      - my_secret
+    command: ["sleep", "300"]
+    depends_on:
+      mysql:
+        condition: service_started
+
+
+  mysql:
+    build:
+      context: ./custom-mysql
+      dockerfile: Dockerfile.mysql
+    environment:
+      - MYSQL_USER=postgres_user
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=mydatabase
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/my_secret
+    ports:
+      - 3306:3306
+    secrets:
+      - my_secret
+
+  postgresql:
+    build:
+      context: ./custom-postgresql
+      dockerfile: Dockerfile.postgresql
+    environment:
+      - POSTGRESQL_LOG_CONNECTIONS=true
+      - POSTGRESQL_LOG_DISCONNECTIONS=true
+      - POSTGRESQL_MAX_CONNECTIONS=5
+      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRESQL_USERNAME=root
+      - POSTGRESQL_POSTGRES_PASSWORD=toor
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/bitnami/postgresql
+    secrets:
+      - my_secret
+
+volumes:
+  pgdata:
+    driver: local
+
+secrets:
+  my_secret:
+    file: ./mysupersecret.txt
